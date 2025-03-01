@@ -7,6 +7,7 @@ const Video = require('../models/Video');
 const AudioService = require('../services/audioService');
 const transcriptionService = require('../services/transcriptionService');
 const summaryService = require('../services/summaryService');
+const detailService = require('../services/detailService');
 
 // Đảm bảo thư mục uploads tồn tại
 const uploadDir = path.join('public', 'uploads');
@@ -138,27 +139,18 @@ router.get('/api/detail/:videoId', async (req, res) => {
       return res.status(400).json({ error: 'Thiếu từ khóa tìm kiếm' });
     }
 
-    const video = await Video.findById(videoId);
+    console.log(`\n🔍 Xử lý yêu cầu chi tiết ý chính: "${keyword}" cho video ID: ${videoId}`);
     
-    if (!video || !video.transcript) {
-      return res.status(404).json({ error: 'Không tìm thấy transcript' });
-    }
+    // Gọi service mới để triển khai ý chính
+    const detail = await detailService.expandKeyPoint(videoId, keyword);
     
-    // Tìm đoạn văn bản liên quan đến từ khóa
-    // (Đây là một cách đơn giản, có thể cải thiện thêm)
-    const transcript = video.transcript;
-    const lines = transcript.split('.');
-    const relevantLines = lines.filter(line => 
-      line.toLowerCase().includes(keyword.toLowerCase())
-    );
-
     res.json({ 
       success: true, 
-      detail: relevantLines.join('. ') 
+      detail: detail
     });
   } catch (error) {
-    console.error('Lỗi khi lấy chi tiết:', error);
-    res.status(500).json({ error: 'Lỗi khi lấy chi tiết transcript' });
+    console.error('❌ LỖI KHI LẤY CHI TIẾT:', error);
+    res.status(500).json({ error: 'Lỗi khi lấy chi tiết ý chính' });
   }
 });
 
