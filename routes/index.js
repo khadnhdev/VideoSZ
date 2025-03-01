@@ -174,6 +174,20 @@ router.get('/result/:videoId', async (req, res) => {
       return res.status(404).render('error', { message: 'Không tìm thấy video' });
     }
     
+    // Chuyển đổi đường dẫn để đảm bảo định dạng đúng
+    if (video.video_path) {
+      // Đảm bảo đường dẫn file có định dạng phù hợp với web server
+      video.video_path = video.video_path.replace(/\\/g, '/');
+      // Đảm bảo đường dẫn URL sẽ không có 'public/' ở đầu vì đó là thư mục tĩnh
+      if (video.video_path.startsWith('public/')) {
+        console.log('Original video path:', video.video_path);
+        video.display_path = video.video_path.replace(/^public\//, '');
+        console.log('Converted video path for display:', video.display_path);
+      } else {
+        video.display_path = video.video_path;
+      }
+    }
+    
     res.render('result', { 
       video: video,
       marked: marked
@@ -361,6 +375,39 @@ router.get('/api/processing-status/:videoId', async (req, res) => {
       status: 'error', 
       error: 'Lỗi khi kiểm tra trạng thái xử lý' 
     });
+  }
+});
+
+// Thêm route để kiểm tra video
+router.get('/check-video/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const video = await Video.findById(videoId);
+    
+    if (!video) {
+      return res.status(404).json({ error: 'Không tìm thấy video' });
+    }
+    
+    // Kiểm tra file tồn tại
+    const videoPath = path.join(__dirname, '..', video.video_path);
+    fs.access(videoPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        return res.status(404).json({ 
+          error: 'File video không tồn tại trên server',
+          path: videoPath,
+          origPath: video.video_path
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: 'File video tồn tại',
+        path: videoPath,
+        url: '/' + video.video_path.replace(/^public\//, '')
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi khi kiểm tra video', details: error.message });
   }
 });
 

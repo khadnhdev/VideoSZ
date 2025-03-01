@@ -11,7 +11,17 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.mp4')) {
+      res.setHeader('Content-Type', 'video/mp4');
+    } else if (path.endsWith('.webm')) {
+      res.setHeader('Content-Type', 'video/webm');
+    } else if (path.endsWith('.ogg')) {
+      res.setHeader('Content-Type', 'video/ogg');
+    }
+  }
+}));
 
 // Middleware riêng cho video để đảm bảo MIME type đúng
 app.use('/public/uploads', (req, res, next) => {
