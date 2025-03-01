@@ -260,6 +260,11 @@
           </div>
           <div class="card-body">
             <% if (video.summary) { %>
+              <div class="card-body">
+                <p class="text-muted mb-3">
+                  <i class="bi bi-hand-index me-1"></i> Nhấp vào từng điểm chính để xem thông tin chi tiết về mỗi ý.
+                </p>
+              </div>
               <div id="key-points-container">
                 <% 
                   // Extract key points from the summary
@@ -341,6 +346,38 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
           <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thêm thông báo hướng dẫn người dùng tương tác với các điểm chính -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header d-flex align-items-center">
+      <h5 class="mb-0 flex-grow-1">
+        <i class="bi bi-card-list me-2"></i>Tóm tắt chính
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="alert alert-info d-flex align-items-center" role="alert">
+        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+        <div>Nhấp vào các điểm chính bên dưới để xem thông tin chi tiết về mỗi ý.</div>
+      </div>
+      
+      <!-- Key Points -->
+      <div class="key-points-list mt-3">
+        <% 
+        if (video.summary) {
+          const keyPoints = video.summary.split('\n').filter(line => line.trim().length > 0);
+          keyPoints.forEach((point, index) => { 
+        %>
+          <div class="key-point" onclick="showDetailForPoint(this)">
+            <div class="d-flex">
+              <div class="me-2 text-primary"><i class="bi bi-check-circle"></i></div>
+              <span><%= point %></span>
+            </div>
+          </div>
+        <% });
+        } %>
       </div>
     </div>
   </div>
