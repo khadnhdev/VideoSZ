@@ -54,6 +54,36 @@ class DetailService {
       throw error;
     }
   }
+
+  // Trả lời câu hỏi về nội dung video
+  async answerQuestion(videoId, question) {
+    console.log(`🤔 Đang xử lý câu hỏi: "${question}" cho video ID: ${videoId}`);
+    
+    try {
+      // Lấy thông tin video từ database
+      const video = await Video.findById(videoId);
+      if (!video) {
+        throw new Error(`Không tìm thấy video với ID: ${videoId}`);
+      }
+      
+      // Chuẩn bị prompt
+      const prompt = promptService.getPrompt('answerQuestion', {
+        transcript: video.transcript,
+        question: question
+      });
+      
+      console.log(`🤖 Đang gửi yêu cầu tới model: ${this.modelName}`);
+      
+      // Gọi Google AI API
+      const result = await this.generateContent(prompt);
+      
+      console.log(`✅ Đã nhận kết quả trả lời cho câu hỏi`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Lỗi khi trả lời câu hỏi: ${error.message}`);
+      throw error;
+    }
+  }
 }
 
 module.exports = new DetailService(); 

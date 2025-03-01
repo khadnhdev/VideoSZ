@@ -3,191 +3,565 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kết quả Transcription & Summary</title>
+  <title>Kết quả Phân tích Video | Video AI Assistant</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="stylesheet" href="/css/modern.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+  <style>
+    .key-point {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+      padding: 8px 16px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+    }
+    .key-point:hover {
+      background-color: rgba(67, 97, 238, 0.1);
+      border-left-color: var(--primary-color);
+      transform: translateX(5px);
+    }
+    .key-point.active {
+      background-color: rgba(67, 97, 238, 0.15);
+      border-left-color: var(--primary-color);
+    }
+    .transcript-timestamp {
+      font-family: monospace;
+      color: var(--primary-color);
+      padding-right: 0.5rem;
+      font-weight: 500;
+    }
+    .tab-pane {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .tab-pane.show.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .transcript-item {
+      padding: 6px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .transcript-item:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    .tab-content {
+      min-height: 300px;
+    }
+    .nav-tabs .nav-link {
+      color: var(--gray-600);
+      font-weight: 500;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 0.75rem 1rem;
+    }
+    .nav-tabs .nav-link.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+      background: transparent;
+    }
+    .card-video {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    .video-container {
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #000;
+    }
+    .summary-title {
+      position: relative;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    .summary-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background: var(--primary-color);
+      border-radius: 3px;
+    }
+    .markdown-content {
+      line-height: 1.8;
+    }
+    .markdown-content h2, .markdown-content h3 {
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .markdown-content ul, .markdown-content ol {
+      padding-left: 1.5rem;
+    }
+  </style>
 </head>
 <body>
-  <%- include('partials/header') %>
+  <!-- Toast Container -->
+  <div class="toast-container"></div>
 
-  <div class="container mt-5">
-    <div class="row">
-      <div class="col-12 mb-4">
-        <a href="/" class="btn btn-secondary">&laquo; Trở về trang chủ</a>
+  <header class="app-header mb-4">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="logo-text">
+          <i class="bi bi-braces me-2"></i>Video AI Assistant
+        </h1>
+        <nav>
+          <a href="/" class="btn btn-outline-light btn-sm px-3">
+            <i class="bi bi-house-door me-1"></i> Trang chủ
+          </a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="container mb-5">
+    <div class="row mb-4">
+      <div class="col-md-8">
+        <h1 class="h3 fw-bold"><%= video.original_filename %></h1>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <div class="dropdown">
+          <button class="btn btn-primary dropdown-toggle" type="button" id="actionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-gear-fill me-1"></i> Tùy chọn
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionDropdown">
+            <li><a class="dropdown-item" href="javascript:void(0)" onclick="downloadTranscript()"><i class="bi bi-file-text me-2"></i>Tải transcript</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0)" onclick="downloadSummary()"><i class="bi bi-file-earmark-text me-2"></i>Tải tóm tắt</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="deleteVideo()"><i class="bi bi-trash me-2"></i>Xóa video</a></li>
+          </ul>
+        </div>
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-6 mb-4">
-        <div class="card mb-4">
-          <div class="card-header bg-primary text-white">
-            <h3>Video</h3>
-          </div>
-          <div class="card-body">
+    <div class="row g-4">
+      <!-- Video Column -->
+      <div class="col-lg-6">
+        <div class="card card-video shadow-sm mb-4">
+          <div class="card-body p-0">
             <div class="video-container">
               <video id="videoPlayer" class="w-100" controls>
                 <source src="/<%= video.video_path.replace(/\\/g, '/') %>" type="video/mp4">
-                Your browser does not support the video tag.
+                Trình duyệt của bạn không hỗ trợ thẻ video.
               </video>
             </div>
-            <div class="mt-2">
-              <p><strong>Tên file:</strong> <%= video.original_filename %></p>
+          </div>
+        </div>
+
+        <!-- Content Tabs -->
+        <ul class="nav nav-tabs mb-3" id="resultTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab" aria-controls="summary" aria-selected="true">
+              <i class="bi bi-card-text me-1"></i>Tóm tắt
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="transcript-tab" data-bs-toggle="tab" data-bs-target="#transcript" type="button" role="tab" aria-controls="transcript" aria-selected="false">
+              <i class="bi bi-journal-text me-1"></i>Transcript
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button" role="tab" aria-controls="detail" aria-selected="false">
+              <i class="bi bi-zoom-in me-1"></i>Chi tiết
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Summary Tab -->
+          <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h4 class="summary-title">Tóm tắt nội dung</h4>
+                <% if (video.summary) { %>
+                  <div id="summary-content" class="markdown-content">
+                    <%- video.summary.replace(/\n/g, '<br>') %>
+                  </div>
+                <% } else { %>
+                  <div class="alert alert-info">
+                    <p class="mb-0"><i class="bi bi-info-circle me-2"></i>Chưa có tóm tắt cho video này</p>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transcript Tab -->
+          <div class="tab-pane fade" id="transcript" role="tabpanel" aria-labelledby="transcript-tab">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h4 class="summary-title mb-0">Transcript đầy đủ</h4>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="showTimestamps" checked>
+                    <label class="form-check-label" for="showTimestamps">Hiển thị thời gian</label>
+                  </div>
+                </div>
+                <div id="transcript-content" class="overflow-auto" style="max-height: 500px;">
+                  <% if (video.transcript) { %>
+                    <% 
+                      const lines = video.transcript.split('\n').filter(line => line.trim());
+                      lines.forEach(line => {
+                        const match = line.match(/\[(\d{2}:\d{2}:\d{2})\]\s*(.*)/);
+                        if (match) {
+                          const timestamp = match[1];
+                          const text = match[2];
+                    %>
+                      <div class="transcript-item">
+                        <span class="transcript-timestamp" data-time="<%= timestamp %>"><%= timestamp %></span>
+                        <span><%= text %></span>
+                      </div>
+                    <% } else { %>
+                      <div class="transcript-item">
+                        <span><%= line %></span>
+                      </div>
+                    <% }
+                    }); %>
+                  <% } else { %>
+                    <div class="alert alert-info">
+                      <i class="bi bi-info-circle me-2"></i>Chưa có transcript
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detail Tab -->
+          <div class="tab-pane fade" id="detail" role="tabpanel" aria-labelledby="detail-tab">
+            <div id="detailContent">
+              <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                  <i class="bi bi-arrow-left-right" style="font-size: 3rem; color: var(--gray-400);"></i>
+                  <h5 class="mt-3 text-muted">Chọn một ý chính từ tóm tắt để xem chi tiết</h5>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="col-md-6 mb-4">
-        <div class="card h-100">
-          <div class="card-header bg-success text-white">
-            <h3>Tóm tắt nội dung</h3>
+      <!-- Key Points Column -->
+      <div class="col-lg-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-list-check me-2"></i>Các điểm chính</h4>
           </div>
-          <div class="card-body summary-content">
+          <div class="card-body">
             <% if (video.summary) { %>
-              <div id="summary-content" class="markdown-content">
-                <%- video.summary.replace(/\n/g, '<br>') %>
+              <div id="key-points-container">
+                <% 
+                  // Extract key points from the summary
+                  const summaryText = video.summary;
+                  const keyPoints = [];
+                  
+                  // Match lines that start with "- " or "* " or numbered lists like "1. "
+                  const regex = /^(?:-|\*|\d+\.)\s+(.+)$/gm;
+                  let match;
+                  
+                  while ((match = regex.exec(summaryText)) !== null) {
+                    keyPoints.push(match[1]);
+                  }
+                  
+                  if (keyPoints.length > 0) {
+                    keyPoints.forEach((point, index) => {
+                %>
+                  <div class="key-point" onclick="showDetailForPoint(this)">
+                    <div class="d-flex">
+                      <div class="me-2 text-primary"><i class="bi bi-check-circle"></i></div>
+                      <span><%= point %></span>
+                    </div>
+                  </div>
+                <% });
+                  } else { %>
+                    <div class="alert alert-info">
+                      <i class="bi bi-info-circle me-2"></i>Không tìm thấy điểm chính từ tóm tắt
+                    </div>
+                <% } %>
               </div>
             <% } else { %>
-              <p class="text-muted">Chưa có tóm tắt</p>
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>Chưa có tóm tắt để phân tích các điểm chính
+              </div>
             <% } %>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-12 mb-4">
-        <div class="card">
+        
+        <!-- Questions Card -->
+        <div class="card shadow-sm mt-4">
           <div class="card-header bg-info text-white">
-            <h3>Chi tiết về ý chính</h3>
+            <h4 class="mb-0"><i class="bi bi-question-circle me-2"></i>Phân tích thêm</h4>
           </div>
           <div class="card-body">
-            <div id="detail-content" class="p-3 border rounded bg-light">
-              <p class="text-center text-muted">Nhấp vào một ý chính từ phần tóm tắt để xem chi tiết</p>
+            <div class="mb-3">
+              <label for="customQuestion" class="form-label">Nhập câu hỏi về nội dung video</label>
+              <input type="text" class="form-control" id="customQuestion" placeholder="VD: Ai là người tham gia chính?">
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-12 mb-4">
-        <div class="card">
-          <div class="card-header bg-secondary text-white">
-            <h3>Nội dung Transcription đầy đủ</h3>
-          </div>
-          <div class="card-body">
-            <% if (video.transcript) { %>
-              <div class="transcript-content p-3 border rounded">
-                <%= video.transcript %>
+            <button class="btn btn-info w-100" id="askButton">
+              <i class="bi bi-search me-2"></i>Hỏi AI
+            </button>
+            
+            <div id="questionResult" class="mt-4 d-none">
+              <div class="card border-0 bg-light">
+                <div class="card-body">
+                  <h5 class="card-title text-info"><i class="bi bi-robot me-2"></i>Trả lời</h5>
+                  <div id="questionAnswer" class="markdown-content"></div>
+                </div>
               </div>
-            <% } else { %>
-              <p class="text-muted">Chưa có transcription</p>
-            <% } %>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row mt-4">
-      <div class="col-12">
-        <div id="detailSection" class="mt-3">
-          <div class="alert alert-info">
-            <p class="mb-0">Nhấp vào một ý chính trong phần tóm tắt để xem phân tích chi tiết.</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <%- include('partials/footer') %>
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Bạn có chắc chắn muốn xóa video "<%= video.original_filename %>" không? Hành động này không thể khôi phục.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const marked = window.marked;
-      const summaryContent = document.getElementById('summary-content');
-      const detailContent = document.getElementById('detail-content');
+      const videoPlayer = document.getElementById('videoPlayer');
+      const showTimestamps = document.getElementById('showTimestamps');
+      const transcriptTimestamps = document.querySelectorAll('.transcript-timestamp');
       
-      if (marked && summaryContent) {
-        // Parse markdown content
-        const rawContent = summaryContent.innerHTML.replace(/<br>/g, '\n');
-        summaryContent.innerHTML = marked.parse(rawContent);
-
-        // Add click event to key points
-        const keyPoints = summaryContent.querySelectorAll('li');
-        keyPoints.forEach(point => {
-          point.style.cursor = 'pointer';
-          point.classList.add('hoverable-point');
-          
-          point.addEventListener('click', async function() {
-            try {
-              // Hiển thị loading spinner
-              detailContent.innerHTML = `
-                <div class="d-flex justify-content-center my-5">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                  <span class="ms-3">Đang phân tích ý chính...</span>
-                </div>
-              `;
-
-              // Lấy nội dung của ý chính
-              const keyPointText = this.textContent.trim();
-              console.log('Đang triển khai ý chính:', keyPointText);
-              
-              // Gọi API để lấy chi tiết về ý chính
-              const response = await fetch(`/api/detail/<%= video.id %>?keyword=${encodeURIComponent(keyPointText)}`);
-              
-              if (!response.ok) {
-                throw new Error('Error fetching details');
-              }
-              
-              const data = await response.json();
-              
-              if (data.success) {
-                // Hiển thị kết quả phân tích (đã định dạng Markdown)
-                detailContent.innerHTML = `
-                  <div class="card">
-                    <div class="card-header bg-info text-white">
-                      <h4>Phân tích chi tiết</h4>
-                    </div>
-                    <div class="card-body markdown-content">
-                      ${marked.parse(data.detail)}
-                    </div>
-                  </div>
-                `;
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              detailContent.innerHTML = `
-                <div class="alert alert-danger">
-                  <p class="mb-0">Đã xảy ra lỗi khi phân tích ý chính</p>
-                </div>
-              `;
-            }
-          });
+      // Toggle timestamps visibility
+      showTimestamps.addEventListener('change', function() {
+        transcriptTimestamps.forEach(timestamp => {
+          timestamp.style.display = this.checked ? 'inline' : 'none';
         });
-      }
+      });
+      
+      // Click on timestamp to seek video
+      transcriptTimestamps.forEach(timestamp => {
+        timestamp.addEventListener('click', function() {
+          const timeStr = this.getAttribute('data-time');
+          const parts = timeStr.split(':');
+          const seconds = parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+          
+          if (videoPlayer) {
+            videoPlayer.currentTime = seconds;
+            videoPlayer.play();
+          }
+        });
+      });
+      
+      // Function to show toast notifications
+      window.showToast = function(message, type = 'success') {
+        const toastContainer = document.querySelector('.toast-container');
+        
+        const toastElement = document.createElement('div');
+        toastElement.className = `toast toast-${type}`;
+        toastElement.innerHTML = `
+          <div class="toast-header">
+            <strong class="me-auto">${type === 'error' ? 'Lỗi' : type === 'success' ? 'Thành công' : 'Thông báo'}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            ${message}
+          </div>
+        `;
+        
+        toastContainer.appendChild(toastElement);
+        
+        const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 5000 });
+        toast.show();
+        
+        toastElement.addEventListener('hidden.bs.toast', function() {
+          toastElement.remove();
+        });
+      };
+      
+      // Download transcript function
+      window.downloadTranscript = function() {
+        <% if (video.transcript) { %>
+          const text = `<%= video.transcript.replace(/\n/g, '\\n') %>`;
+          const filename = '<%= video.original_filename.replace(/\.[^/.]+$/, "") %>_transcript.txt';
+          
+          const blob = new Blob([text], { type: 'text/plain' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          showToast('Đã tải xuống transcript');
+        <% } else { %>
+          showToast('Không có transcript để tải xuống', 'error');
+        <% } %>
+      };
+      
+      // Download summary function
+      window.downloadSummary = function() {
+        <% if (video.summary) { %>
+          const text = `<%= video.summary.replace(/\n/g, '\\n') %>`;
+          const filename = '<%= video.original_filename.replace(/\.[^/.]+$/, "") %>_summary.txt';
+          
+          const blob = new Blob([text], { type: 'text/plain' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          showToast('Đã tải xuống tóm tắt');
+        <% } else { %>
+          showToast('Không có tóm tắt để tải xuống', 'error');
+        <% } %>
+      };
+      
+      // Delete video function
+      window.deleteVideo = function() {
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+      };
+      
+      // Show detail for key point function
+      window.showDetailForPoint = async function(element) {
+        // Highlight selected key point
+        document.querySelectorAll('.key-point').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        
+        // Show the detail tab
+        document.getElementById('detail-tab').click();
+        
+        // Show loading state
+        const detailContent = document.getElementById('detailContent');
+        detailContent.innerHTML = `
+          <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Đang phân tích chi tiết...</p>
+          </div>
+        `;
+        
+        try {
+          // Get the key point text
+          const keyPointText = element.querySelector('span').textContent.trim();
+          
+          // Call API to get detail
+          const response = await fetch(`/api/detail/<%= video.id %>?keyword=${encodeURIComponent(keyPointText)}`);
+          
+          if (!response.ok) {
+            throw new Error('Error fetching details');
+          }
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // Display the detail content with Markdown
+            detailContent.innerHTML = `
+              <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0"><i class="bi bi-search me-2"></i>Chi tiết: ${keyPointText}</h5>
+                </div>
+                <div class="card-body markdown-content">
+                  ${marked.parse(data.detail)}
+                </div>
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          detailContent.innerHTML = `
+            <div class="alert alert-danger">
+              <p class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Đã xảy ra lỗi khi phân tích ý chính</p>
+            </div>
+          `;
+        }
+      };
+      
+      // Handle ask button click
+      document.getElementById('askButton').addEventListener('click', async function() {
+        const question = document.getElementById('customQuestion').value.trim();
+        const questionResult = document.getElementById('questionResult');
+        const questionAnswer = document.getElementById('questionAnswer');
+        
+        if (!question) {
+          showToast('Vui lòng nhập câu hỏi', 'error');
+          return;
+        }
+        
+        try {
+          this.disabled = true;
+          this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Đang xử lý...';
+          
+          // Call API to get answer
+          const response = await fetch(`/api/ask/<%= video.id %>?question=${encodeURIComponent(question)}`);
+          
+          if (!response.ok) {
+            throw new Error('Error fetching answer');
+          }
+          
+          const data = await response.json();
+          
+          // Show result
+          questionResult.classList.remove('d-none');
+          questionAnswer.innerHTML = marked.parse(data.answer);
+          
+        } catch (error) {
+          console.error('Error:', error);
+          showToast('Đã xảy ra lỗi khi xử lý câu hỏi', 'error');
+          
+          questionResult.classList.remove('d-none');
+          questionAnswer.innerHTML = '<div class="alert alert-danger">Không thể xử lý câu hỏi này. Vui lòng thử lại sau.</div>';
+        } finally {
+          this.disabled = false;
+          this.innerHTML = '<i class="bi bi-search me-2"></i>Hỏi AI';
+        }
+      });
+      
+      // Delete confirmation
+      document.getElementById('confirmDelete').addEventListener('click', async function() {
+        try {
+          const response = await fetch(`/api/videos/<%= video.id %>`, {
+            method: 'DELETE'
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Không thể xóa video');
+          }
+          
+          window.location.href = '/';
+        } catch (error) {
+          console.error('Error:', error);
+          const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+          deleteModal.hide();
+          showToast(error.message, 'error');
+        }
+      });
     });
-
-    // Debug video playback
-    const videoPlayer = document.getElementById('videoPlayer');
-    if (videoPlayer) {
-      console.log('Đường dẫn video:', videoPlayer.querySelector('source').src);
-      
-      videoPlayer.addEventListener('error', function(e) {
-        console.error('Lỗi khi tải video:', e);
-        console.error('Mã lỗi:', videoPlayer.error ? videoPlayer.error.code : 'Unknown');
-        console.error('Chi tiết lỗi:', videoPlayer.error);
-      });
-      
-      videoPlayer.addEventListener('loadeddata', function() {
-        console.log('✅ Video đã tải thành công');
-      });
-    }
   </script>
 </body>
 </html> 

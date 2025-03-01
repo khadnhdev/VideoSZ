@@ -8,6 +8,7 @@ const AudioService = require('../services/audioService');
 const transcriptionService = require('../services/transcriptionService');
 const summaryService = require('../services/summaryService');
 const detailService = require('../services/detailService');
+const marked = require('marked');
 
 // Đảm bảo thư mục uploads tồn tại
 const uploadDir = path.join('public', 'uploads');
@@ -122,9 +123,12 @@ router.get('/result/:videoId', async (req, res) => {
       return res.status(404).render('error', { message: 'Không tìm thấy video' });
     }
     
-    res.render('result', { video });
+    res.render('result', { 
+      video: video,
+      marked: marked
+    });
   } catch (error) {
-    console.error('Lỗi khi hiển thị kết quả:', error);
+    console.error('❌ LỖI KHI HIỂN THỊ TRANG KẾT QUẢ:', error);
     res.status(500).render('error', { message: 'Lỗi khi hiển thị kết quả' });
   }
 });
@@ -180,6 +184,100 @@ router.post('/api/prompts/reload', (req, res) => {
   } catch (error) {
     console.error('❌ LỖI KHI TẢI LẠI PROMPTS:', error);
     res.status(500).json({ error: 'Lỗi khi tải lại prompts' });
+  }
+});
+
+// API để hỏi đáp về nội dung video
+router.get('/api/ask/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const { question } = req.query;
+    
+    if (!question) {
+      return res.status(400).json({ error: 'Thiếu câu hỏi' });
+    }
+
+    // Lấy thông tin video
+    const video = await Video.findById(videoId);
+    if (!video) {
+      return res.status(404).json({ error: 'Không tìm thấy video' });
+    }
+    
+    // Đảm bảo video có transcript
+    if (!video.transcript) {
+      return res.status(400).json({ error: 'Video không có transcript để phân tích' });
+    }
+    
+    // Gọi service để xử lý câu hỏi
+    const answer = await detailService.answerQuestion(videoId, question);
+    
+    res.json({ 
+      success: true, 
+      answer: answer
+    });
+  } catch (error) {
+    console.error('❌ LỖI KHI XỬ LÝ CÂU HỎI:', error);
+    res.status(500).json({ error: 'Lỗi khi xử lý câu hỏi' });
+  }
+});
+
+// Route để hiển thị trang xử lý video
+router.get('/processing/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const video = await Video.findById(videoId);
+    
+    if (!video) {
+      return res.status(404).render('error', { message: 'Không tìm thấy video' });
+    }
+    
+    res.render('processing', { videoId });
+  } catch (error) {
+    console.error('❌ LỖI KHI HIỂN THỊ TRANG XỬ LÝ:', error);
+    res.status(500).render('error', { message: 'Lỗi khi hiển thị trang xử lý' });
+  }
+});
+
+// API để kiểm tra trạng thái xử lý video
+router.get('/api/processing-status/:videoId', async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const video = await Video.findById(videoId);
+    
+    if (!video) {
+      return res.status(404).json({ error: 'Không tìm thấy video' });
+    }
+    
+    // Xác định trạng thái xử lý dựa trên dữ liệu
+    let status = 'processing';
+    let currentStep = 1;
+    let error = null;
+    
+    // Kiểm tra trạng thái dựa trên dữ liệu
+    if (video.audio_path) {
+      currentStep = 2; // Đã chuyển video sang audio
+      
+      if (video.transcript) {
+        currentStep = 3; // Đã transcribe
+        
+        if (video.summary) {
+          status = 'completed'; // Tất cả các bước đã hoàn thành
+        }
+      }
+    }
+    
+    res.json({
+      videoId,
+      status,
+      currentStep,
+      error
+    });
+  } catch (error) {
+    console.error('❌ LỖI KHI KIỂM TRA TRẠNG THÁI XỬ LÝ:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      error: 'Lỗi khi kiểm tra trạng thái xử lý' 
+    });
   }
 });
 

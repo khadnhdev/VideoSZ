@@ -3,108 +3,372 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video Transcription & Summary</title>
+  <title>Video AI Assistant - Phân tích và Tóm tắt Video</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/modern.css">
 </head>
 <body>
-  <%- include('partials/header') %>
+  <header class="app-header mb-5">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="logo-text">
+          <i class="bi bi-braces me-2"></i>Video AI Assistant
+        </h1>
+        <nav>
+          <a href="/" class="btn btn-outline-light btn-sm px-3 active">
+            <i class="bi bi-house-door me-1"></i> Trang chủ
+          </a>
+        </nav>
+      </div>
+    </div>
+  </header>
 
   <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-header bg-primary text-white">
-            <h2 class="text-center">Upload Video</h2>
-          </div>
-          <div class="card-body">
-            <form id="uploadForm" enctype="multipart/form-data">
-              <div class="mb-3">
-                <label for="video" class="form-label">Chọn file video (MP4, AVI, MOV...)</label>
-                <input class="form-control" type="file" id="video" name="video" accept="video/*" required>
-              </div>
-              <div class="progress mb-3 d-none" id="uploadProgress">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
-              </div>
-              <div class="d-grid">
-                <button class="btn btn-primary" type="submit" id="uploadButton">Upload & Xử lý</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div class="card mt-4 d-none" id="processingCard">
-          <div class="card-header bg-info text-white">
-            <h3 class="text-center">Đang xử lý...</h3>
-          </div>
-          <div class="card-body text-center">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-3" id="processingStatus">Đang upload video...</p>
-          </div>
+    <div class="row align-items-center mb-5">
+      <div class="col-lg-6 order-lg-2 mb-4 mb-lg-0">
+        <img src="/images/video-analysis.svg" alt="Video Analysis" class="img-fluid fade-in">
+      </div>
+      <div class="col-lg-6 order-lg-1">
+        <h1 class="display-4 fw-bold mb-3 fade-in">Chuyển đổi video thành văn bản và tóm tắt thông minh</h1>
+        <p class="lead mb-4 fade-in">Upload video của bạn và nhận transcript cùng tóm tắt được tạo bởi AI chỉ trong vài phút.</p>
+        <div class="d-grid d-md-flex gap-2 fade-in">
+          <a href="#upload-section" class="btn btn-primary btn-lg px-4">
+            <i class="bi bi-upload me-2"></i> Bắt đầu ngay
+          </a>
+          <a href="#features" class="btn btn-outline-primary btn-lg px-4">
+            <i class="bi bi-info-circle me-2"></i> Tìm hiểu thêm
+          </a>
         </div>
       </div>
     </div>
+
+    <section id="features" class="py-5 mb-5">
+      <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold">Tính năng nổi bật</h2>
+        <p class="lead">Trải nghiệm sức mạnh của AI trong phân tích video</p>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card h-100 text-center p-4 feature-card">
+            <div class="card-body">
+              <div class="icon-wrapper mb-3">
+                <i class="bi bi-mic text-primary" style="font-size: 2.5rem;"></i>
+              </div>
+              <h3 class="card-title h4">Transcript Chính xác</h3>
+              <p class="card-text">Chuyển đổi lời nói thành văn bản với độ chính xác cao, hỗ trợ nhiều ngôn ngữ.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card h-100 text-center p-4 feature-card">
+            <div class="card-body">
+              <div class="icon-wrapper mb-3">
+                <i class="bi bi-journal-text text-primary" style="font-size: 2.5rem;"></i>
+              </div>
+              <h3 class="card-title h4">Tóm tắt Thông minh</h3>
+              <p class="card-text">Trích xuất các ý chính và tóm tắt nội dung quan trọng từ video của bạn.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card h-100 text-center p-4 feature-card">
+            <div class="card-body">
+              <div class="icon-wrapper mb-3">
+                <i class="bi bi-clock-history text-primary" style="font-size: 2.5rem;"></i>
+              </div>
+              <h3 class="card-title h4">Tiết kiệm Thời gian</h3>
+              <p class="card-text">Xử lý nhanh chóng, giúp bạn tiết kiệm thời gian khi làm việc với nội dung video.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="upload-section" class="py-5">
+      <div class="card shadow-lg border-0 overflow-hidden">
+        <div class="card-header bg-primary text-white">
+          <h2 class="h3 mb-0"><i class="bi bi-upload me-2"></i>Upload Video</h2>
+        </div>
+        <div class="card-body p-lg-5">
+          <form id="uploadForm" enctype="multipart/form-data">
+            <div id="upload-container">
+              <div id="dropArea" class="upload-area mb-4">
+                <div class="upload-icon">
+                  <i class="bi bi-cloud-arrow-up"></i>
+                </div>
+                <h3 class="h5 mb-3">Kéo thả video hoặc nhấp để chọn</h3>
+                <p class="text-muted mb-3">Hỗ trợ MP4, AVI, MOV, WMV (tối đa 100MB)</p>
+                <label for="videoFile" class="btn btn-primary px-4">
+                  <i class="bi bi-folder me-2"></i> Chọn video
+                </label>
+                <input type="file" id="videoFile" name="video" accept="video/*" class="d-none">
+              </div>
+              
+              <div id="fileInfo" class="d-none">
+                <div class="card mb-4 border-0 bg-light">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center">
+                      <div class="flex-shrink-0">
+                        <i class="bi bi-file-earmark-play text-primary" style="font-size: 2rem;"></i>
+                      </div>
+                      <div class="flex-grow-1 ms-3">
+                        <h5 class="mb-1" id="fileName">video.mp4</h5>
+                        <p class="mb-0 text-muted" id="fileSize">0 MB</p>
+                      </div>
+                      <div>
+                        <button type="button" id="changeFile" class="btn btn-sm btn-outline-secondary">
+                          <i class="bi bi-arrow-repeat"></i> Đổi file
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="text-center">
+                <button type="submit" id="uploadBtn" class="btn btn-primary btn-lg px-4 py-2" disabled>
+                  <i class="bi bi-upload me-2"></i> Upload & Xử lý
+                </button>
+              </div>
+            </div>
+
+            <div id="progress-container" class="d-none">
+              <h4 class="text-center mb-3">Đang upload video...</h4>
+              <div class="progress">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+              </div>
+              <p class="text-center mt-2" id="progressText">0%</p>
+            </div>
+
+            <div id="processing-container" class="text-center d-none">
+              <div class="mb-4">
+                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                  <span class="visually-hidden">Đang xử lý...</span>
+                </div>
+              </div>
+              <h4 class="mb-2">Đang xử lý video</h4>
+              <p class="text-muted">Vui lòng đợi trong giây lát...</p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <%- include('partials/footer') %>
+  <footer class="py-4 bg-dark text-white mt-5">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <p class="mb-md-0">© 2023 Video AI Assistant</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p class="mb-0"><small>Powered by OpenAI & Google AI</small></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast-container"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
+    document.addEventListener('DOMContentLoaded', function() {
+      const uploadForm = document.getElementById('uploadForm');
+      const dropArea = document.getElementById('dropArea');
+      const videoInput = document.getElementById('videoFile');
+      const fileInfo = document.getElementById('fileInfo');
+      const fileName = document.getElementById('fileName');
+      const fileSize = document.getElementById('fileSize');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const changeFileBtn = document.getElementById('changeFile');
+      const uploadContainer = document.getElementById('upload-container');
+      const progressContainer = document.getElementById('progress-container');
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+      const processingContainer = document.getElementById('processing-container');
       
-      const form = this;
-      const formData = new FormData(form);
-      const uploadButton = document.getElementById('uploadButton');
-      const uploadProgress = document.getElementById('uploadProgress');
-      const progressBar = uploadProgress.querySelector('.progress-bar');
-      const processingCard = document.getElementById('processingCard');
-      const processingStatus = document.getElementById('processingStatus');
+      // Change file button handler
+      changeFileBtn.addEventListener('click', () => {
+        fileInfo.classList.add('d-none');
+        dropArea.classList.remove('d-none');
+        uploadBtn.disabled = true;
+      });
       
-      // Hiển thị progress bar
-      uploadProgress.classList.remove('d-none');
-      uploadButton.disabled = true;
+      // File input change handler
+      videoInput.addEventListener('change', () => {
+        handleFileSelect(videoInput.files);
+      });
       
-      try {
-        // Upload video
-        const uploadResponse = await fetch('/upload', {
-          method: 'POST',
-          body: formData
+      // Drag and drop handlers
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+      });
+      
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+          dropArea.classList.add('dragover');
+        }, false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+          dropArea.classList.remove('dragover');
+        }, false);
+      });
+      
+      dropArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFileSelect(files);
+      }, false);
+      
+      // Handle file selection
+      function handleFileSelect(files) {
+        if (files.length === 0) return;
+        
+        const file = files[0];
+        
+        // Check if it's a video file
+        if (!file.type.startsWith('video/')) {
+          showToast('Vui lòng chọn file video hợp lệ', 'error');
+          return;
+        }
+        
+        // Check file size (100MB limit)
+        const maxSize = 100 * 1024 * 1024; // 100MB
+        if (file.size > maxSize) {
+          showToast('File không được vượt quá 100MB', 'error');
+          return;
+        }
+        
+        // Update UI
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        dropArea.classList.add('d-none');
+        fileInfo.classList.remove('d-none');
+        uploadBtn.disabled = false;
+      }
+      
+      // Format file size
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+      
+      // Form submit handler
+      uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (videoInput.files.length === 0) {
+          showToast('Vui lòng chọn một file video', 'error');
+          return;
+        }
+        
+        // Show progress UI
+        uploadContainer.classList.add('d-none');
+        progressContainer.classList.remove('d-none');
+        
+        const formData = new FormData();
+        formData.append('video', videoInput.files[0]);
+        
+        try {
+          // Upload with progress tracking
+          const xhr = new XMLHttpRequest();
+          
+          xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+              const percent = Math.round((e.loaded / e.total) * 100);
+              progressBar.style.width = percent + '%';
+              progressText.textContent = percent + '%';
+            }
+          });
+          
+          // Use Promise to handle XHR response
+          const uploadResult = await new Promise((resolve, reject) => {
+            xhr.open('POST', '/upload');
+            
+            xhr.onload = function() {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  const data = JSON.parse(xhr.responseText);
+                  resolve(data);
+                } catch (e) {
+                  reject(new Error('Phản hồi không hợp lệ'));
+                }
+              } else {
+                try {
+                  const errorData = JSON.parse(xhr.responseText);
+                  reject(new Error(errorData.error || 'Lỗi khi upload'));
+                } catch (e) {
+                  reject(new Error(`Lỗi ${xhr.status}: ${xhr.statusText}`));
+                }
+              }
+            };
+            
+            xhr.onerror = function() {
+              reject(new Error('Kết nối bị gián đoạn'));
+            };
+            
+            xhr.send(formData);
+          });
+          
+          // Show processing UI
+          progressContainer.classList.add('d-none');
+          processingContainer.classList.remove('d-none');
+          
+          showToast('Upload thành công! Đang chuyển hướng...', 'success');
+          
+          // Redirect to processing page
+          window.location.href = `/processing/${uploadResult.videoId}`;
+          
+        } catch (error) {
+          console.error('Lỗi:', error);
+          
+          // Show error message
+          progressContainer.classList.add('d-none');
+          uploadContainer.classList.remove('d-none');
+          
+          showToast(error.message || 'Đã xảy ra lỗi khi upload', 'error');
+        }
+      });
+      
+      // Show toast notification
+      function showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        
+        const toastElement = document.createElement('div');
+        toastElement.className = `toast toast-${type}`;
+        toastElement.innerHTML = `
+          <div class="toast-header">
+            <strong class="me-auto">${type === 'error' ? 'Lỗi' : type === 'success' ? 'Thành công' : 'Thông báo'}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            ${message}
+          </div>
+        `;
+        
+        toastContainer.appendChild(toastElement);
+        
+        const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 5000 });
+        toast.show();
+        
+        toastElement.addEventListener('hidden.bs.toast', function() {
+          toastElement.remove();
         });
-        
-        if (!uploadResponse.ok) {
-          throw new Error('Upload failed');
-        }
-        
-        const uploadResult = await uploadResponse.json();
-        
-        // Hiển thị trạng thái xử lý
-        processingCard.classList.remove('d-none');
-        progressBar.style.width = '100%';
-        processingStatus.textContent = 'Đang xử lý video...';
-        
-        // Xử lý video
-        const processResponse = await fetch(`/process/${uploadResult.videoId}`, {
-          method: 'POST'
-        });
-        
-        if (!processResponse.ok) {
-          throw new Error('Processing failed');
-        }
-        
-        const processResult = await processResponse.json();
-        
-        // Chuyển hướng đến trang kết quả
-        if (processResult.redirect) {
-          window.location.href = processResult.redirect;
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('Đã xảy ra lỗi trong quá trình xử lý!');
-        uploadButton.disabled = false;
-        uploadProgress.classList.add('d-none');
       }
     });
   </script>

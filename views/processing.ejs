@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đang xử lý video | Video AI Assistant</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/modern.css">
+  <style>
+    .step {
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+    
+    .step-active {
+      border-left-color: var(--primary-color);
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+    
+    .step-completed {
+      border-left-color: var(--success-color);
+    }
+    
+    .step-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: var(--gray-200);
+    }
+    
+    .step-active .step-icon {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .step-completed .step-icon {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(67, 97, 238, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    .success-checkmark {
+      animation: fadeIn 0.5s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header mb-5">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="logo-text">
+          <i class="bi bi-braces me-2"></i>Video AI Assistant
+        </h1>
+        <nav>
+          <a href="/" class="btn btn-outline-light btn-sm px-3">
+            <i class="bi bi-house-door me-1"></i> Trang chủ
+          </a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card fade-in">
+          <div class="card-body p-lg-5 text-center">
+            <div class="mb-4 position-relative" id="processingIcon">
+              <div class="spinner-grow text-primary" role="status" style="width: 5rem; height: 5rem;">
+                <span class="visually-hidden">Đang xử lý...</span>
+              </div>
+              <div class="position-absolute top-100 start-50 translate-middle mt-3 w-100">
+                <div class="progress bg-light" style="height: 4px; width: 120px; margin: 0 auto;">
+                  <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <h2 class="h3 mb-2 fw-bold" id="processingTitle">Đang xử lý video của bạn</h2>
+            <p class="text-muted mb-5" id="processingSubtitle">Quá trình này có thể mất vài phút tùy thuộc vào độ dài video</p>
+            
+            <div class="processing-steps">
+              <div class="step mb-3 d-flex align-items-center p-3 rounded step-active" id="step1">
+                <div class="step-icon me-3">
+                  <i class="bi bi-music-note-beamed"></i>
+                </div>
+                <div class="step-text">
+                  <h5 class="mb-0 fw-semibold">Đang chuyển đổi video sang audio</h5>
+                  <small class="text-muted">Trích xuất âm thanh từ video của bạn</small>
+                </div>
+              </div>
+              
+              <div class="step mb-3 d-flex align-items-center p-3 rounded" id="step2">
+                <div class="step-icon me-3">
+                  <i class="bi bi-mic"></i>
+                </div>
+                <div class="step-text">
+                  <h5 class="mb-0 fw-semibold text-muted">Đang tạo transcript</h5>
+                  <small class="text-muted">Chuyển đổi âm thanh thành văn bản sử dụng AI</small>
+                </div>
+              </div>
+              
+              <div class="step mb-3 d-flex align-items-center p-3 rounded" id="step3">
+                <div class="step-icon me-3">
+                  <i class="bi bi-journal-text"></i>
+                </div>
+                <div class="step-text">
+                  <h5 class="mb-0 fw-semibold text-muted">Đang tạo tóm tắt</h5>
+                  <small class="text-muted">Phân tích transcript và tổng hợp thành các điểm chính</small>
+                </div>
+              </div>
+              
+              <div class="step mb-3 d-flex align-items-center p-3 rounded d-none" id="stepComplete">
+                <div class="step-icon me-3 bg-success">
+                  <i class="bi bi-check-lg"></i>
+                </div>
+                <div class="step-text">
+                  <h5 class="mb-0 fw-semibold text-success">Hoàn thành xử lý</h5>
+                  <small class="text-muted">Video của bạn đã được xử lý xong, sẵn sàng để xem</small>
+                </div>
+              </div>
+              
+              <div class="step mb-3 d-flex align-items-center p-3 rounded d-none" id="stepError">
+                <div class="step-icon me-3 bg-danger">
+                  <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="step-text">
+                  <h5 class="mb-0 fw-semibold text-danger">Đã xảy ra lỗi</h5>
+                  <small class="text-danger" id="errorMessage">Không thể xử lý video</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-5 d-none" id="resultActions">
+              <a href="/result/<%= videoId %>" class="btn btn-primary btn-lg px-4 py-2 me-2" id="viewResultBtn">
+                <i class="bi bi-eye me-2"></i> Xem kết quả
+              </a>
+              <a href="/" class="btn btn-outline-secondary btn-lg px-4 py-2">
+                <i class="bi bi-house-door me-2"></i> Về trang chủ
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="py-4 bg-dark text-white mt-5">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <p class="mb-md-0">© 2025 Video AI Assistant</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p class="mb-0"><small>Powered by OpenAI & Google AI</small></p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const videoId = '<%= videoId %>';
+      let currentStep = 0;
+      let checkStatusInterval;
+      
+      // Gọi API để bắt đầu xử lý video
+      startProcessing();
+      
+      // Hàm bắt đầu xử lý video
+      async function startProcessing() {
+        try {
+          console.log('Bắt đầu xử lý video:', videoId);
+          const response = await fetch(`/process/${videoId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Lỗi khi xử lý video');
+          }
+          
+          console.log('Xử lý bắt đầu thành công, bắt đầu kiểm tra trạng thái');
+          // Bắt đầu kiểm tra trạng thái
+          checkStatus();
+        } catch (error) {
+          console.error('Lỗi khi bắt đầu xử lý:', error);
+          showError(error.message || 'Không thể bắt đầu xử lý video');
+        }
+      }
+      
+      // Kiểm tra trạng thái xử lý
+      async function checkStatus() {
+        try {
+          console.log('Kiểm tra trạng thái xử lý:', videoId);
+          const response = await fetch(`/api/processing-status/${videoId}`);
+          
+          if (!response.ok) {
+            throw new Error('Không thể kiểm tra trạng thái xử lý');
+          }
+          
+          const data = await response.json();
+          console.log('Kết quả trạng thái:', data);
+          
+          if (data.status === 'error') {
+            showError(data.error || 'Đã xảy ra lỗi khi xử lý video');
+            return;
+          }
+          
+          // Nếu bước đã thay đổi, cập nhật UI
+          if (data.currentStep > currentStep) {
+            console.log(`Bước xử lý thay đổi: ${currentStep} -> ${data.currentStep}`);
+            
+            // Cập nhật các bước đã hoàn thành
+            for (let i = currentStep + 1; i < data.currentStep; i++) {
+              markStepComplete(i);
+            }
+            
+            // Cập nhật bước hiện tại
+            if (currentStep > 0) {
+              markStepComplete(currentStep);
+            }
+            
+            currentStep = data.currentStep;
+            markStepActive(currentStep);
+          }
+          
+          // Nếu đã hoàn thành
+          if (data.status === 'completed') {
+            console.log('Xử lý đã hoàn thành!');
+            markStepComplete(currentStep);
+            showCompletionMessage();
+            if (checkStatusInterval) {
+              clearInterval(checkStatusInterval);
+            }
+            return;
+          }
+          
+          // Tiếp tục kiểm tra trạng thái nếu chưa hoàn thành
+          if (!checkStatusInterval) {
+            console.log('Thiết lập kiểm tra trạng thái định kỳ');
+            checkStatusInterval = setInterval(checkStatus, 3000);
+          }
+        } catch (error) {
+          console.error('Lỗi khi kiểm tra trạng thái:', error);
+          if (checkStatusInterval) {
+            clearInterval(checkStatusInterval);
+          }
+        }
+      }
+      
+      // Đánh dấu bước đang xử lý
+      function markStepActive(stepNumber) {
+        console.log('Đánh dấu bước đang xử lý:', stepNumber);
+        const step = document.getElementById(`step${stepNumber}`);
+        if (step) {
+          // Xóa trạng thái active từ các bước khác
+          document.querySelectorAll('.step').forEach(el => {
+            el.classList.remove('step-active');
+          });
+          
+          // Thêm trạng thái active cho bước hiện tại
+          step.classList.add('step-active');
+          
+          // Thay đổi màu chữ
+          const title = step.querySelector('h5');
+          if (title) {
+            title.classList.remove('text-muted');
+          }
+          
+          // Thêm hiệu ứng pulse
+          step.style.animation = 'pulse 2s infinite';
+        }
+      }
+      
+      // Đánh dấu bước hoàn thành
+      function markStepComplete(stepNumber) {
+        console.log('Đánh dấu bước hoàn thành:', stepNumber);
+        const step = document.getElementById(`step${stepNumber}`);
+        if (step) {
+          step.classList.remove('step-active');
+          step.classList.add('step-completed');
+          step.style.animation = '';
+          
+          // Thay đổi icon
+          const icon = step.querySelector('.step-icon i');
+          if (icon) {
+            icon.className = 'bi bi-check-lg';
+          }
+          
+          // Thay đổi màu chữ
+          const title = step.querySelector('h5');
+          if (title) {
+            title.classList.remove('text-muted');
+            title.classList.add('text-success');
+          }
+        }
+      }
+      
+      // Hiển thị thông báo hoàn thành
+      function showCompletionMessage() {
+        // Hiển thị thông báo hoàn thành
+        document.getElementById('stepComplete').classList.remove('d-none');
+        document.getElementById('resultActions').classList.remove('d-none');
+        
+        // Cập nhật biểu tượng và tiêu đề
+        const processingIcon = document.getElementById('processingIcon');
+        processingIcon.innerHTML = '<div class="success-checkmark"><i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i></div>';
+        
+        document.getElementById('processingTitle').textContent = 'Xử lý thành công!';
+        document.getElementById('processingSubtitle').textContent = 'Video của bạn đã được phân tích và sẵn sàng để xem';
+      }
+      
+      // Hiển thị thông báo lỗi
+      function showError(message) {
+        console.error('Hiển thị lỗi:', message);
+        // Hiển thị thông báo lỗi
+        document.getElementById('stepError').classList.remove('d-none');
+        document.getElementById('errorMessage').textContent = message;
+        
+        // Cập nhật biểu tượng và tiêu đề
+        const processingIcon = document.getElementById('processingIcon');
+        processingIcon.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 5rem;"></i>';
+        
+        document.getElementById('processingTitle').textContent = 'Đã xảy ra lỗi';
+        document.getElementById('processingTitle').classList.add('text-danger');
+        document.getElementById('processingSubtitle').textContent = 'Không thể hoàn thành xử lý video';
+        
+        // Hiển thị nút về trang chủ
+        document.getElementById('resultActions').classList.remove('d-none');
+        document.getElementById('viewResultBtn').classList.add('d-none');
+        
+        // Dừng kiểm tra trạng thái
+        if (checkStatusInterval) {
+          clearInterval(checkStatusInterval);
+        }
+      }
+    });
+  </script>
+</body>
+</html> 

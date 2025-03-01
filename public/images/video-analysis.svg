@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+  <!-- SVG code cho hình minh họa -->
+  <style>
+    .primary { fill: #4361ee; }
+    .secondary { fill: #7209b7; }
+    .accent { fill: #f72585; }
+    .light { fill: #f8f9fa; }
+    .dark { fill: #212529; }
+  </style>
+  <rect width="500" height="500" fill="none"/>
+  <rect x="100" y="100" width="300" height="200" rx="10" class="dark"/>
+  <polygon points="250,150 300,200 250,250 250,150" class="light"/>
+  <rect x="150" y="320" width="200" height="20" rx="5" class="primary"/>
+  <rect x="170" y="350" width="160" height="10" rx="5" class="secondary"/>
+  <rect x="180" y="370" width="140" height="10" rx="5" class="secondary"/>
+  <rect x="190" y="390" width="120" height="10" rx="5" class="secondary"/>
+  <circle cx="250" cy="200" r="30" class="accent" opacity="0.5"/>
+</svg> 

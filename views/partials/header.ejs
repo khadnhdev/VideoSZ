@@ -1,13 +1,13 @@
-<header class="bg-dark text-white py-3">
+<header class="app-header mb-4">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center">
-      <h1>Video Transcription & Summary</h1>
+      <h1 class="logo-text">
+        <i class="bi bi-braces me-2"></i>Video AI Assistant
+      </h1>
       <nav>
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link text-white" href="/">Trang chủ</a>
-          </li>
-        </ul>
+        <a href="/" class="btn btn-outline-light btn-sm px-3 <%= activePage === 'home' ? 'active' : '' %>">
+          <i class="bi bi-house-door me-1"></i> Trang chủ
+        </a>
       </nav>
     </div>
   </div>
