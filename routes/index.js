@@ -84,32 +84,83 @@ router.post('/process/:videoId', async (req, res) => {
   const { videoId } = req.params;
   console.log(`\n=== BẮT ĐẦU XỬ LÝ VIDEO (ID: ${videoId}) ===`);
   
+  // Trả về phản hồi ngay lập tức để trang front-end không bị block
+  res.json({ 
+    success: true, 
+    message: 'Đang xử lý video, kiểm tra trạng thái để biết tiến độ'
+  });
+  
+  // Khởi tạo trạng thái ban đầu
+  await Video.updateStatus(videoId, {
+    currentStep: 1,
+    progress: 0,
+    message: 'Đang chuẩn bị xử lý video'
+  });
+  
+  // Tiếp tục xử lý trong background
   try {
-    // Chuyển video sang audio
+    // Hàm tiện ích để delay
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    
+    // Hàm cập nhật trạng thái
+    async function updateProgress(step, progress, message) {
+      console.log(`📊 Tiến độ: Bước ${step} - ${progress}% - ${message}`);
+      await Video.updateStatus(videoId, { currentStep: step, progress, message });
+    }
+    
+    // Bước 1: Chuyển video sang audio
     console.log('🎬 BƯỚC 1: Đang chuyển đổi video sang audio...');
+    await updateProgress(1, 10, 'Bắt đầu chuyển đổi video sang audio');
+    await delay(500); // Thêm delay để người dùng thấy tiến trình
+    
+    await updateProgress(1, 30, 'Đang xử lý video...');
+    await delay(500);
+    
+    await updateProgress(1, 50, 'Đang trích xuất âm thanh...');
     const audioPath = await AudioService.convertVideoToAudio(videoId);
     console.log(`✅ Chuyển đổi audio thành công: ${audioPath}`);
     
-    // Transcribe audio
+    await updateProgress(1, 100, 'Đã chuyển đổi video sang audio');
+    await delay(500);
+    
+    // Bước 2: Transcribe audio
     console.log('\n🎙️ BƯỚC 2: Đang transcribe audio...');
+    await updateProgress(2, 10, 'Bắt đầu phân tích audio');
+    await delay(500);
+    
+    await updateProgress(2, 40, 'Đang nhận dạng giọng nói...');
+    await delay(1000);
+    
+    await updateProgress(2, 70, 'Đang chuyển đổi thành văn bản...');
     const transcript = await transcriptionService.transcribeAudio(videoId);
     console.log(`✅ Transcribe thành công (${transcript.length} ký tự)`);
-    console.log(`📝 Đoạn đầu transcript: "${transcript.substring(0, 100)}..."`);
     
-    // Summary transcript
+    await updateProgress(2, 100, 'Đã hoàn thành transcribe');
+    await delay(500);
+    
+    // Bước 3: Summary transcript
     console.log('\n📊 BƯỚC 3: Đang tạo summary từ transcript...');
+    await updateProgress(3, 20, 'Đang phân tích nội dung transcript');
+    await delay(500);
+    
+    await updateProgress(3, 60, 'Đang tạo tóm tắt thông minh...');
+    await delay(1000);
+    
     const summary = await summaryService.summarizeTranscript(videoId);
     console.log(`✅ Summary thành công (${summary.length} ký tự)`);
     
-    res.json({ 
-      success: true, 
-      message: 'Xử lý thành công',
-      redirect: `/result/${videoId}`
-    });
+    await updateProgress(4, 100, 'Đã hoàn thành xử lý video');
     console.log('=== KẾT THÚC XỬ LÝ VIDEO ===\n');
   } catch (error) {
     console.error('❌ LỖI KHI XỬ LÝ VIDEO:', error);
-    res.status(500).json({ error: 'Lỗi khi xử lý video' });
+    // Cập nhật trạng thái lỗi
+    try {
+      await Video.updateStatus(videoId, {
+        error: error.message
+      });
+    } catch (dbError) {
+      console.error('❌ LỖI KHI CẬP NHẬT TRẠNG THÁI LỖI:', dbError);
+    }
   }
 });
 
@@ -248,28 +299,60 @@ router.get('/api/processing-status/:videoId', async (req, res) => {
       return res.status(404).json({ error: 'Không tìm thấy video' });
     }
     
-    // Xác định trạng thái xử lý dựa trên dữ liệu
+    // Xác định trạng thái xử lý dựa trên dữ liệu hiện có
     let status = 'processing';
     let currentStep = 1;
-    let error = null;
+    let progress = 0;
+    let message = 'Đang xử lý video...';
+    let error = video.processing_error || null;
     
-    // Kiểm tra trạng thái dựa trên dữ liệu
+    // Dùng phương pháp cũ để xác định trạng thái
     if (video.audio_path) {
-      currentStep = 2; // Đã chuyển video sang audio
+      currentStep = 2;
+      progress = 100;
+      message = 'Đã chuyển đổi video sang audio';
       
       if (video.transcript) {
-        currentStep = 3; // Đã transcribe
+        currentStep = 3;
+        message = 'Đã tạo transcript từ audio';
         
         if (video.summary) {
-          status = 'completed'; // Tất cả các bước đã hoàn thành
+          status = 'completed';
+          currentStep = 4;
+          progress = 100;
+          message = 'Đã hoàn thành xử lý video';
         }
       }
+    }
+    
+    if (error) {
+      status = 'error';
+    }
+    
+    // Thử sử dụng thông tin từ các cột mới nếu có
+    try {
+      if (video.current_step) {
+        currentStep = video.current_step;
+      }
+      
+      if (video.progress !== undefined) {
+        progress = video.progress;
+      }
+      
+      if (video.status_message) {
+        message = video.status_message;
+      }
+    } catch (e) {
+      // Bỏ qua lỗi nếu các cột không tồn tại
+      console.log('Các cột mới chưa được thêm vào database');
     }
     
     res.json({
       videoId,
       status,
       currentStep,
+      progress,
+      message,
       error
     });
   } catch (error) {

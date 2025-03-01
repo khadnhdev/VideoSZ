@@ -75,6 +75,57 @@ class Video {
       );
     });
   }
+
+  static updateStatus(id, data) {
+    return new Promise((resolve, reject) => {
+      const { currentStep, progress, message, error } = data;
+      
+      let query = 'UPDATE videos SET ';
+      const params = [];
+      const updates = [];
+      
+      // Luôn cập nhật processing_error nếu có
+      if (error) {
+        updates.push('processing_error = ?');
+        params.push(error);
+      }
+      
+      // Thử cập nhật các cột mới, bỏ qua nếu có lỗi
+      try {
+        if (currentStep !== undefined) {
+          updates.push('current_step = ?');
+          params.push(currentStep);
+        }
+        
+        if (progress !== undefined) {
+          updates.push('progress = ?');
+          params.push(progress);
+        }
+        
+        if (message) {
+          updates.push('status_message = ?');
+          params.push(message);
+        }
+      } catch (e) {
+        console.log('Bỏ qua cập nhật các cột không có sẵn');
+      }
+      
+      if (updates.length === 0) {
+        return resolve({ changes: 0 });
+      }
+      
+      query += updates.join(', ') + ' WHERE id = ?';
+      params.push(id);
+      
+      db.run(query, params, function(err) {
+        if (err) {
+          console.log('Lỗi SQL khi cập nhật (có thể do thiếu cột):', err.message);
+          return resolve({ changes: 0 });
+        }
+        resolve({ changes: this.changes });
+      });
+    });
+  }
 }
 
 module.exports = Video; 
