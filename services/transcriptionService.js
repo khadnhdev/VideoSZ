@@ -4,9 +4,18 @@ const Video = require('../models/Video');
 
 class TranscriptionService {
   constructor() {
-    this.openai = new OpenAI({
+    // Cấu hình OpenAI với khả năng tùy chỉnh endpoint
+    const openAIConfig = {
       apiKey: process.env.OPENAI_API_KEY,
-    });
+    };
+    
+    // Thêm baseURL nếu được chỉ định trong biến môi trường
+    if (process.env.OPENAI_API_ENDPOINT) {
+      openAIConfig.baseURL = process.env.OPENAI_API_ENDPOINT;
+      console.log(`🔗 Sử dụng OpenAI API endpoint tùy chỉnh: ${process.env.OPENAI_API_ENDPOINT}`);
+    }
+    
+    this.openai = new OpenAI(openAIConfig);
   }
 
   async transcribeAudio(videoId) {
@@ -36,12 +45,12 @@ class TranscriptionService {
 
       // Gọi API OpenAI để transcribe
       console.log('🌐 Đang gọi API OpenAI Whisper...');
-      console.log('⚙️ Sử dụng model: whisper-1, ngôn ngữ: vi');
+      console.log(`⚙️ Sử dụng model: ${process.env.OPENAI_WHISPER_MODEL || "whisper-1"}, ngôn ngữ: vi`);
       
       const response = await this.openai.audio.transcriptions.create({
         file: audioFile,
-        model: "whisper-1",
-        language: "vi", // Có thể thay đổi theo ngôn ngữ cần thiết
+        model: process.env.OPENAI_WHISPER_MODEL || "whisper-1",
+        language: "vi",
         response_format: "json",
       });
 

@@ -154,4 +154,33 @@ router.get('/api/detail/:videoId', async (req, res) => {
   }
 });
 
+// API để lấy tất cả prompts
+router.get('/api/prompts', (req, res) => {
+  try {
+    const promptService = require('../services/promptService');
+    res.json({
+      success: true,
+      prompts: promptService.templates
+    });
+  } catch (error) {
+    console.error('❌ LỖI KHI LẤY PROMPTS:', error);
+    res.status(500).json({ error: 'Lỗi khi lấy danh sách prompts' });
+  }
+});
+
+// API để tải lại prompts từ file
+router.post('/api/prompts/reload', (req, res) => {
+  try {
+    const promptService = require('../services/promptService');
+    const count = promptService.reloadPrompts();
+    res.json({
+      success: true,
+      message: `Đã tải lại ${count} prompts thành công`
+    });
+  } catch (error) {
+    console.error('❌ LỖI KHI TẢI LẠI PROMPTS:', error);
+    res.status(500).json({ error: 'Lỗi khi tải lại prompts' });
+  }
+});
+
 module.exports = router; 

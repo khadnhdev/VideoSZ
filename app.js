@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const routes = require('./routes');
 const db = require('./config/database');
+const promptService = require('./services/promptService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,6 +50,9 @@ app.listen(PORT, () => {
 📁 Thư mục uploads: ${path.join(__dirname, 'public', 'uploads')}
 🔑 API keys được cấu hình: ${process.env.OPENAI_API_KEY ? '✅ OpenAI' : '❌ OpenAI'}, ${process.env.GOOGLE_API_KEY ? '✅ Google' : '❌ Google'}
 ⚙️ FFmpeg path: ${require('ffmpeg-static')}
+📋 Prompts templates: ${Object.keys(promptService.templates).length} templates đã tải
+🤖 Models: Whisper (${process.env.OPENAI_WHISPER_MODEL || 'whisper-1'}), Summary (${process.env.GOOGLE_SUMMARY_MODEL || 'gemini-2.0-flash'}), Detail (${process.env.GOOGLE_DETAIL_MODEL || 'gemini-2.0-flash'})
+🔗 OpenAI API Endpoint: ${process.env.OPENAI_API_ENDPOINT || 'Mặc định (api.openai.com)'}
 ====================================================
   `);
 }); 

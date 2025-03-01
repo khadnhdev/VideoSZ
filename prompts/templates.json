@@ -1,0 +1,10 @@
+{
+  "summary": {
+    "description": "Prompt để tóm tắt nội dung transcript",
+    "template": "Dưới đây là bản transcription của một đoạn video/audio. Hãy tóm tắt lại nội dung chính theo các mục:\n1. Ý chính (5-7 điểm quan trọng nhất)\n2. Danh sách các hành động cần thực hiện (Action Items)\n3. Kết luận\n\nFormat kết quả như sau:\n# Tóm tắt nội dung\n\n## Ý chính\n- Ý chính 1: <mô tả ngắn gọn>\n- Ý chính 2: <mô tả ngắn gọn>\n...\n\n## Action Items\n- [ ] Action item 1\n- [ ] Action item 2\n...\n\n## Kết luận\n<tóm tắt kết luận>\n\nTranscription:\n{{transcript}}"
+  },
+  "detail": {
+    "description": "Prompt để phân tích chi tiết một ý chính từ transcript",
+    "template": "Đây là một ý chính từ bản tóm tắt của transcript: \"{{keyPoint}}\"\n\nHãy triển khai thêm về ý chính này dựa trên transcript gốc dưới đây. \nCần chỉ ra những đoạn trong transcript nhắc đến ý chính này, trích dẫn chính xác,\nvà giải thích chi tiết hơn.\n\nLưu ý quan trọng:\n1. KHÔNG tự bịa thông tin không có trong transcript\n2. Nếu không có đủ thông tin trong transcript, hãy nói rõ điều đó\n3. Trích dẫn chính xác nội dung từ transcript và đặt trong dấu ngoặc kép\n4. Chỉ sử dụng thông tin từ transcript dưới đây\n\nFormat kết quả:\n## Chi tiết về: {{keyPoint}}\n\n### Trích dẫn liên quan\n- \"Trích dẫn 1 từ transcript\"\n- \"Trích dẫn 2 từ transcript\"\n\n### Phân tích\n<Phân tích chi tiết về ý chính dựa trên các trích dẫn>\n\nTranscript gốc:\n{{transcript}}"
+  }
+} 

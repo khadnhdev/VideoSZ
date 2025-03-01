@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Video = require('../models/Video');
+const promptService = require('./promptService');
 
 class SummaryService {
   constructor() {
@@ -18,41 +19,21 @@ class SummaryService {
       }
       console.log(`📝 Thông tin transcript: ID=${videoId}, Độ dài=${video.transcript.length} ký tự`);
 
-      // Tạo prompt cho Gemini
-      console.log('🔍 Đang tạo prompt cho Gemini...');
-      const prompt = `
-        Dưới đây là bản transcription của một đoạn video/audio. Hãy tóm tắt lại nội dung chính theo các mục:
-        1. Ý chính (5-7 điểm quan trọng nhất)
-        2. Danh sách các hành động cần thực hiện (Action Items)
-        3. Kết luận
-
-        Format kết quả như sau:
-        # Tóm tắt nội dung
-        
-        ## Ý chính
-        - Ý chính 1: <mô tả ngắn gọn>
-        - Ý chính 2: <mô tả ngắn gọn>
-        ...
-        
-        ## Action Items
-        - [ ] Action item 1
-        - [ ] Action item 2
-        ...
-        
-        ## Kết luận
-        <tóm tắt kết luận>
-
-        Transcription:
-        ${video.transcript}
-      `;
+      // Tạo prompt cho Gemini sử dụng promptService
+      console.log('🔍 Đang tạo prompt cho Gemini từ template...');
+      const prompt = promptService.getPrompt('summary', { 
+        transcript: video.transcript 
+      });
       
       console.log(`📐 Độ dài prompt: ${prompt.length} ký tự`);
 
       // Gọi API Gemini để summary
       console.log('🌐 Đang gọi API Gemini...');
-      console.log('⚙️ Sử dụng model: gemini-2.0-flash');
+      console.log(`⚙️ Sử dụng model: ${process.env.GOOGLE_SUMMARY_MODEL || "gemini-2.0-flash"}`);
       
-      const model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = this.genAI.getGenerativeModel({ 
+        model: process.env.GOOGLE_SUMMARY_MODEL || "gemini-2.0-flash" 
+      });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const summary = response.text();
