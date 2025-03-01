@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Transcription & Summary</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h2 class="text-center">Upload Video</h2>
+          </div>
+          <div class="card-body">
+            <form id="uploadForm" enctype="multipart/form-data">
+              <div class="mb-3">
+                <label for="video" class="form-label">Chọn file video (MP4, AVI, MOV...)</label>
+                <input class="form-control" type="file" id="video" name="video" accept="video/*" required>
+              </div>
+              <div class="progress mb-3 d-none" id="uploadProgress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+              </div>
+              <div class="d-grid">
+                <button class="btn btn-primary" type="submit" id="uploadButton">Upload & Xử lý</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card mt-4 d-none" id="processingCard">
+          <div class="card-header bg-info text-white">
+            <h3 class="text-center">Đang xử lý...</h3>
+          </div>
+          <div class="card-body text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3" id="processingStatus">Đang upload video...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const form = this;
+      const formData = new FormData(form);
+      const uploadButton = document.getElementById('uploadButton');
+      const uploadProgress = document.getElementById('uploadProgress');
+      const progressBar = uploadProgress.querySelector('.progress-bar');
+      const processingCard = document.getElementById('processingCard');
+      const processingStatus = document.getElementById('processingStatus');
+      
+      // Hiển thị progress bar
+      uploadProgress.classList.remove('d-none');
+      uploadButton.disabled = true;
+      
+      try {
+        // Upload video
+        const uploadResponse = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Upload failed');
+        }
+        
+        const uploadResult = await uploadResponse.json();
+        
+        // Hiển thị trạng thái xử lý
+        processingCard.classList.remove('d-none');
+        progressBar.style.width = '100%';
+        processingStatus.textContent = 'Đang xử lý video...';
+        
+        // Xử lý video
+        const processResponse = await fetch(`/process/${uploadResult.videoId}`, {
+          method: 'POST'
+        });
+        
+        if (!processResponse.ok) {
+          throw new Error('Processing failed');
+        }
+        
+        const processResult = await processResponse.json();
+        
+        // Chuyển hướng đến trang kết quả
+        if (processResult.redirect) {
+          window.location.href = processResult.redirect;
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Đã xảy ra lỗi trong quá trình xử lý!');
+        uploadButton.disabled = false;
+        uploadProgress.classList.add('d-none');
+      }
+    });
+  </script>
+</body>
+</html> 

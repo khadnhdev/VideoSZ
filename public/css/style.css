@@ -1,0 +1,52 @@
+body {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  flex: 1;
+}
+
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.summary-content {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.transcript-content {
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-line;
+}
+
+.hoverable-point {
+  transition: background-color 0.2s ease;
+}
+
+.hoverable-point:hover {
+  background-color: #f0f0f0;
+  border-radius: 3px;
+  padding: 2px 5px;
+}
+
+.markdown-content ul {
+  padding-left: 20px;
+}
+
+.markdown-content h1 {
+  font-size: 1.8rem;
+}
+
+.markdown-content h2 {
+  font-size: 1.5rem;
+  margin-top: 1rem;
+}
+
+.markdown-content h3 {
+  font-size: 1.3rem;
+} 

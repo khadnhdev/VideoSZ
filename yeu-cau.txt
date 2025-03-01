@@ -1,0 +1,7 @@
+Ý tưởng:
+Người dùng có thể upload video lên server -> chuyển sang audio FFmpeg 
+Sau đó, upload audio lên server sẽ gọi API có openAI interface để làm transcribe.
+Sau khi có transcribe sẽ bắt đầu gọi API của gemini để summary.
+
+Summary sẽ summary theo format những ý chính, action item...
+Sau đó, người dùng có thể click vào các ý chính để triển khai thêm thông tin từ transcription.
