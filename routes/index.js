@@ -252,37 +252,32 @@ router.post('/api/prompts/reload', (req, res) => {
   }
 });
 
-// API để hỏi đáp về nội dung video
+// API để trả lời câu hỏi về video
 router.get('/api/ask/:videoId', async (req, res) => {
   try {
     const { videoId } = req.params;
     const { question } = req.query;
     
     if (!question) {
-      return res.status(400).json({ error: 'Thiếu câu hỏi' });
-    }
-
-    // Lấy thông tin video
-    const video = await Video.findById(videoId);
-    if (!video) {
-      return res.status(404).json({ error: 'Không tìm thấy video' });
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Vui lòng cung cấp câu hỏi' 
+      });
     }
     
-    // Đảm bảo video có transcript
-    if (!video.transcript) {
-      return res.status(400).json({ error: 'Video không có transcript để phân tích' });
-    }
-    
-    // Gọi service để xử lý câu hỏi
     const answer = await detailService.answerQuestion(videoId, question);
     
-    res.json({ 
-      success: true, 
-      answer: answer
+    res.json({
+      success: true,
+      answer
     });
   } catch (error) {
     console.error('❌ LỖI KHI XỬ LÝ CÂU HỎI:', error);
-    res.status(500).json({ error: 'Lỗi khi xử lý câu hỏi' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Lỗi khi xử lý câu hỏi',
+      message: error.message
+    });
   }
 });
 

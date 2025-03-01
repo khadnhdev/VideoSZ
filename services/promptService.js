@@ -4,51 +4,61 @@ const path = require('path');
 class PromptService {
   constructor() {
     this.templates = {};
-    this.loadPrompts();
+    this.loadTemplates();
   }
 
-  loadPrompts() {
+  loadTemplates() {
     try {
-      console.log('🔄 Đang tải các prompt templates...');
-      const filePath = path.join(__dirname, '..', 'prompts', 'templates.json');
-      
-      if (!fs.existsSync(filePath)) {
-        console.error(`❌ Không tìm thấy file templates: ${filePath}`);
-        return;
-      }
-      
-      const data = fs.readFileSync(filePath, 'utf8');
-      this.templates = JSON.parse(data);
-      
-      console.log(`✅ Đã tải ${Object.keys(this.templates).length} prompt templates`);
-      console.log(`📝 Các templates đã tải: ${Object.keys(this.templates).join(', ')}`);
+      const templatesPath = path.join(__dirname, '..', 'prompts', 'templates.json');
+      const templateData = fs.readFileSync(templatesPath, 'utf8');
+      this.templates = JSON.parse(templateData);
+      console.log(`📝 Đã tải ${Object.keys(this.templates).length} templates`);
     } catch (error) {
-      console.error('❌ Lỗi khi tải prompt templates:', error);
+      console.error('❌ Lỗi khi tải templates:', error);
+      // Khởi tạo với object rỗng nếu có lỗi
+      this.templates = {};
     }
   }
 
-  getPrompt(templateName, variables = {}) {
+  getPrompt(templateName, data = {}) {
+    // Kiểm tra xem template có tồn tại không
     if (!this.templates[templateName]) {
       console.error(`❌ Không tìm thấy template: ${templateName}`);
       throw new Error(`Template "${templateName}" không tồn tại`);
     }
-    
-    let promptText = this.templates[templateName].template;
-    
-    // Thay thế các biến trong template
-    for (const [key, value] of Object.entries(variables)) {
-      const placeholder = new RegExp(`{{${key}}}`, 'g');
-      promptText = promptText.replace(placeholder, value);
+
+    // Lấy template content - kiểm tra cả trường hợp template là object hoặc string
+    let templateContent;
+    if (typeof this.templates[templateName] === 'object' && this.templates[templateName].template) {
+      templateContent = this.templates[templateName].template;
+    } else if (typeof this.templates[templateName] === 'string') {
+      templateContent = this.templates[templateName];
+    } else {
+      throw new Error(`Template "${templateName}" không có nội dung hợp lệ`);
     }
+
+    // Thay thế các placeholder trong template
+    let prompt = templateContent;
     
-    console.log(`📋 Đã tạo prompt sử dụng template: ${templateName}`);
-    return promptText;
+    // Duyệt qua tất cả các khóa trong data và thay thế vào template
+    for (const key in data) {
+      if (data[key] === undefined || data[key] === null) {
+        data[key] = ''; // Đặt giá trị mặc định là chuỗi rỗng nếu giá trị là undefined hoặc null
+      }
+      
+      // Đảm bảo data[key] là string trước khi gọi replace
+      const value = String(data[key]);
+      const placeholder = new RegExp(`{{${key}}}`, 'g');
+      prompt = prompt.replace(placeholder, value);
+    }
+
+    return prompt;
   }
 
   // Thêm method cho phép reload templates từ file
   reloadPrompts() {
     console.log('🔄 Đang tải lại prompt templates...');
-    this.loadPrompts();
+    this.loadTemplates();
     return Object.keys(this.templates).length;
   }
 }

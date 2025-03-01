@@ -6,5 +6,10 @@
   "detail": {
     "description": "Prompt để phân tích chi tiết một ý chính từ transcript",
     "template": "Đây là một ý chính từ bản tóm tắt của transcript: \"{{keyPoint}}\"\n\nHãy triển khai thêm về ý chính này dựa trên transcript gốc dưới đây. \nCần chỉ ra những đoạn trong transcript nhắc đến ý chính này, trích dẫn chính xác,\nvà giải thích chi tiết hơn.\n\nLưu ý quan trọng:\n1. KHÔNG tự bịa thông tin không có trong transcript\n2. Nếu không có đủ thông tin trong transcript, hãy nói rõ điều đó\n3. Trích dẫn chính xác nội dung từ transcript và đặt trong dấu ngoặc kép\n4. Chỉ sử dụng thông tin từ transcript dưới đây\n\nFormat kết quả:\n## Chi tiết về: {{keyPoint}}\n\n### Trích dẫn liên quan\n- \"Trích dẫn 1 từ transcript\"\n- \"Trích dẫn 2 từ transcript\"\n\n### Phân tích\n<Phân tích chi tiết về ý chính dựa trên các trích dẫn>\n\nTranscript gốc:\n{{transcript}}"
-  }
+  },
+  "summarizeTranscript": "Bạn là một trợ lý AI chuyên giúp người dùng tóm tắt nội dung video. Nhiệm vụ của bạn là tóm tắt transcript sau đây thành dạng điểm chính (bullet points), mỗi điểm một dòng.\n\nTranscript:\n{{transcript}}\n\nTóm tắt thành các điểm sau, mỗi điểm 1 dòng (không đánh số):",
+  
+  "getDetail": "Bạn là một trợ lý AI giúp phân tích nội dung video. Dựa vào transcript được cung cấp, hãy phân tích chi tiết về chủ đề: '{{keyword}}'. Đưa ra phân tích sâu về chủ đề này dựa trên nội dung transcript.\n\nTranscript:\n{{transcript}}\n\nPhân tích chi tiết về '{{keyword}}':",
+  
+  "answerQuestion": "Bạn là một trợ lý AI giúp trả lời câu hỏi dựa trên nội dung video. Sử dụng transcript được cung cấp, hãy trả lời câu hỏi của người dùng. Chỉ dựa trên thông tin có trong transcript, không thêm thông tin bên ngoài.\n\nTranscript:\n{{transcript}}\n\nCâu hỏi: {{question}}\n\nTrả lời chi tiết dựa trên nội dung transcript:"
 } 

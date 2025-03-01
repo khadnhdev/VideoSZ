@@ -55,33 +55,47 @@ class DetailService {
     }
   }
 
-  // Trả lời câu hỏi về nội dung video
+  // Trả lời câu hỏi dựa trên transcript
   async answerQuestion(videoId, question) {
-    console.log(`🤔 Đang xử lý câu hỏi: "${question}" cho video ID: ${videoId}`);
-    
     try {
-      // Lấy thông tin video từ database
+      console.log(`🤔 Đang xử lý câu hỏi: "${question}" cho video ID: ${videoId}`);
+      
       const video = await Video.findById(videoId);
-      if (!video) {
-        throw new Error(`Không tìm thấy video với ID: ${videoId}`);
+      if (!video || !video.transcript) {
+        throw new Error('Không tìm thấy video hoặc transcript');
       }
       
-      // Chuẩn bị prompt
-      const prompt = promptService.getPrompt('answerQuestion', {
+      // Lấy prompt từ template
+      const prompt = promptService.getPrompt("answerQuestion", {
         transcript: video.transcript,
         question: question
       });
       
-      console.log(`🤖 Đang gửi yêu cầu tới model: ${this.modelName}`);
+      // Gọi API để xử lý
+      const answer = await this.callAI(prompt);
       
-      // Gọi Google AI API
-      const result = await this.generateContent(prompt);
-      
-      console.log(`✅ Đã nhận kết quả trả lời cho câu hỏi`);
-      return result;
+      console.log('✅ Đã tạo câu trả lời thành công');
+      return answer;
     } catch (error) {
-      console.error(`❌ Lỗi khi trả lời câu hỏi: ${error.message}`);
+      console.error('❌ Lỗi khi trả lời câu hỏi:', error);
       throw error;
+    }
+  }
+
+  async callAI(prompt) {
+    try {
+      console.log(`⚙️ Sử dụng model: ${process.env.GOOGLE_DETAIL_MODEL || "gemini-2.0-flash"}`);
+      
+      const model = this.genAI.getGenerativeModel({ 
+        model: process.env.GOOGLE_DETAIL_MODEL || "gemini-2.0-flash" 
+      });
+      
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error('❌ Lỗi khi gọi AI:', error);
+      throw new Error('Không thể xử lý yêu cầu với AI: ' + error.message);
     }
   }
 }
