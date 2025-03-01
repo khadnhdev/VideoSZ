@@ -55,10 +55,10 @@ router.post('/upload', upload.single('video'), async (req, res) => {
     console.log(`📂 Đường dẫn lưu trữ: ${req.file.path}`);
     console.log(`📊 Kích thước: ${(req.file.size / (1024 * 1024)).toFixed(2)} MB`);
 
-    // Lưu thông tin video vào database
+    // Lưu thông tin video vào database - đảm bảo đường dẫn được chuẩn hóa
     const videoData = {
       originalFilename: req.file.originalname,
-      videoPath: req.file.path
+      videoPath: req.file.path.replace(/\\/g, '/') // Chuẩn hóa đường dẫn
     };
     
     console.log('💾 Đang lưu thông tin video vào database...');

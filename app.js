@@ -12,6 +12,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Middleware riêng cho video để đảm bảo MIME type đúng
+app.use('/public/uploads', (req, res, next) => {
+  const ext = path.extname(req.path).toLowerCase();
+  if (ext === '.mp4') {
+    res.setHeader('Content-Type', 'video/mp4');
+  } else if (ext === '.avi') {
+    res.setHeader('Content-Type', 'video/x-msvideo');
+  } else if (ext === '.mov') {
+    res.setHeader('Content-Type', 'video/quicktime');
+  } else if (ext === '.wmv') {
+    res.setHeader('Content-Type', 'video/x-ms-wmv');
+  }
+  next();
+});
+
 // Thiết lập view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
