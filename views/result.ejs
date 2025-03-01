@@ -159,13 +159,13 @@
 
             <!-- Content Tabs -->
             <ul class="nav nav-tabs mb-3" id="resultTabs" role="tablist">
-              <li class="nav-item" role="presentation">
+              <!-- <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab" aria-controls="summary" aria-selected="true">
                   <i class="bi bi-card-text me-1"></i>Tóm tắt
                 </button>
-              </li>
+              </li> -->
               <li class="nav-item" role="presentation">
-                <button class="nav-link" id="transcript-tab" data-bs-toggle="tab" data-bs-target="#transcript" type="button" role="tab" aria-controls="transcript" aria-selected="false">
+                <button class="nav-link active" id="transcript-tab" data-bs-toggle="tab" data-bs-target="#transcript" type="button" role="tab" aria-controls="transcript" aria-selected="false">
                   <i class="bi bi-journal-text me-1"></i>Transcript
                 </button>
               </li>
@@ -177,26 +177,10 @@
             </ul>
 
             <div class="tab-content">
-              <!-- Summary Tab -->
-              <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
-                <div class="card shadow-sm">
-                  <div class="card-body">
-                    <h4 class="summary-title">Tóm tắt nội dung</h4>
-                    <% if (video.summary) { %>
-                      <div id="summary-content" class="markdown-content">
-                        <%- video.summary.replace(/\n/g, '<br>') %>
-                      </div>
-                    <% } else { %>
-                      <div class="alert alert-info">
-                        <p class="mb-0"><i class="bi bi-info-circle me-2"></i>Chưa có tóm tắt cho video này</p>
-                      </div>
-                    <% } %>
-                  </div>
-                </div>
-              </div>
-
+              <!-- Phân tích thêm Tab -->
+    
               <!-- Transcript Tab -->
-              <div class="tab-pane fade" id="transcript" role="tabpanel" aria-labelledby="transcript-tab">
+              <div class="tab-pane show active" id="transcript" role="tabpanel" aria-labelledby="transcript-tab">
                 <div class="card shadow-sm">
                   <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -304,26 +288,25 @@
         </div>
         
         <!-- Questions Card -->
-        <div class="card shadow-sm mt-4">
-          <div class="card-header bg-info text-white">
-            <h4 class="mb-0"><i class="bi bi-question-circle me-2"></i>Phân tích thêm</h4>
+        <div class="card shadow-sm mb-4">
+          <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Phân tích thêm</h5>
           </div>
           <div class="card-body">
+            <p class="text-muted mb-3">Đặt câu hỏi để phân tích thêm về nội dung video.</p>
+            
             <div class="mb-3">
-              <label for="customQuestion" class="form-label">Nhập câu hỏi về nội dung video</label>
-              <input type="text" class="form-control" id="customQuestion" placeholder="VD: Ai là người tham gia chính?">
+              <div class="input-group">
+                <input type="text" id="customQuestion" class="form-control" placeholder="Nhập câu hỏi của bạn về nội dung video...">
+                <button class="btn btn-primary" id="askButton">
+                  <i class="bi bi-search me-2"></i>Phân tích
+                </button>
+              </div>
             </div>
-            <button class="btn btn-info w-100" id="askButton">
-              <i class="bi bi-search me-2"></i>Hỏi AI
-            </button>
             
             <div id="questionResult" class="mt-4 d-none">
-              <div class="card border-0 bg-light">
-                <div class="card-body">
-                  <h5 class="card-title text-info"><i class="bi bi-robot me-2"></i>Trả lời</h5>
-                  <div id="questionAnswer" class="markdown-content"></div>
-                </div>
-              </div>
+              <h5 class="mb-3">Kết quả phân tích:</h5>
+              <div id="questionAnswer" class="card card-body bg-light markdown-content"></div>
             </div>
           </div>
         </div>
@@ -351,55 +334,6 @@
   </div>
 
   <!-- Thêm thông báo hướng dẫn người dùng tương tác với các điểm chính -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header d-flex align-items-center">
-      <h5 class="mb-0 flex-grow-1">
-        <i class="bi bi-card-list me-2"></i>Tóm tắt chính
-      </h5>
-    </div>
-    <div class="card-body">
-      <div class="alert alert-info d-flex align-items-center" role="alert">
-        <i class="bi bi-info-circle-fill me-2 fs-5"></i>
-        <div>Nhấp vào các điểm chính bên dưới để xem thông tin chi tiết về mỗi ý.</div>
-      </div>
-      
-      <!-- Key Points -->
-      <div class="key-points-list mt-3">
-        <% 
-        if (video.summary) {
-          const keyPoints = video.summary.split('\n').filter(line => line.trim().length > 0);
-          keyPoints.forEach((point, index) => { 
-        %>
-          <div class="key-point" onclick="showDetailForPoint(this)">
-            <div class="d-flex">
-              <div class="me-2 text-primary"><i class="bi bi-check-circle"></i></div>
-              <span><%= point %></span>
-            </div>
-          </div>
-        <% });
-        } %>
-      </div>
-    </div>
-  </div>
-
-  <!-- Thêm phần hiển thị thông tin video -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header">
-      <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Thông tin video</h5>
-    </div>
-    <div class="card-body">
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-file-earmark-play me-2"></i>Tên file gốc:</span>
-          <span class="badge bg-primary rounded-pill"><%= video.original_filename %></span>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <span><i class="bi bi-clock me-2"></i>Thời gian tạo:</span>
-          <span class="badge bg-secondary rounded-pill"><%= new Date(video.created_at).toLocaleString('vi-VN') %></span>
-        </li>
-      </ul>
-    </div>
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
@@ -597,7 +531,7 @@
           questionAnswer.innerHTML = '<div class="alert alert-danger">Không thể xử lý câu hỏi này. Vui lòng thử lại sau.</div>';
         } finally {
           this.disabled = false;
-          this.innerHTML = '<i class="bi bi-search me-2"></i>Hỏi AI';
+          this.innerHTML = '<i class="bi bi-search me-2"></i>Phân tích';
         }
       });
       
